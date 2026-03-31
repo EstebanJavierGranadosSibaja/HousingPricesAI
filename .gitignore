@@ -1,0 +1,88 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Model and artifact files
+models/
+outputs/
+*.h5
+*.hdf5
+*.pt
+*.pth
+*.ckpt
+*.pkl
+*.joblib
+
+# Data files (opcional)
+# Si NO quieres versionar los CSV del dataset (recomendado si son muy grandes),
+# descomenta la línea siguiente o ajusta la ruta donde guardes los datos:
+# /house-prices-advanced-regression-techniques/*.csv
+# o si guardas datos en /data/raw:
+# /data/raw/*
+
+# Secrets and environment
+.env.local
+.env.*.local
+secrets/
+*.pem
+*.key
+
+# Python packaging leftovers
+*.egg
+*.egg-info/
+*.dist-info/
+
+# Byte-compiled / caches
+*.pyc
+*.pyo
+
+# Windows shortcuts
+*.lnk
