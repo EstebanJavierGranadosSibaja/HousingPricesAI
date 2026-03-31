@@ -1,187 +1,133 @@
-Actúa como un arquitecto senior en Machine Learning especializado en proyectos académicos que también funcionan como portafolio profesional.
+Actúa como un arquitecto senior en Machine Learning especializado en proyectos académicos optimizados para máxima calificación y portafolio profesional.
 
-Tu objetivo es diseñar una estructura de proyecto que maximice la calificación académica, pero que también sea lo suficientemente limpia, clara y profesional como para incluirse en un portafolio.
+Voy a darte la estructura actual de mi proyecto. Tu tarea es REFINARLA, no reinventarla completamente.
 
 IMPORTANTE:
 
-* Prioriza cumplir el enunciado al 100%
-* NO agregues complejidad innecesaria
-* Mantén una estructura limpia pero con criterio profesional
-* Piensa como profesor (evaluación) y como reclutador (portafolio)
+* Respeta el enunciado del proyecto (NO agregues cosas fuera de alcance)
+* El objetivo es máxima nota + calidad visual/profesional
+* El proyecto debe seguir siendo simple, claro y demostrable
+* Elimina ruido, duplicación y malas prácticas
 
 ---
 
 ## ENUNCIADO DEL PROYECTO
 
-"El enuncido está en el archivo EnunciadoProyecto.md"
+Mira el documento llamado EnunciadoProyecto.md
 
 ---
 
-## CONTEXTO
+## ESTRUCTURA ACTUAL
 
-Proyecto de regresión para predicción de precios de viviendas con:
-
-* 2 modelos obligatorios:
-
-  * Regresión Lineal
-  * Random Forest
-* Métricas:
-
-  * MAE
-  * MSE
-  * RMSE
-  * R²
-* Sistema interactivo para el usuario
-* Notebook como pieza principal de entrega
+Mira el documento llamado project-tree.md
 
 ---
 
 ## OBJETIVO
 
-Diseñar una estructura que:
+Optimizar esta estructura para que sea:
 
-1. Maximice la nota (alineación perfecta con rúbrica)
-2. Sea clara y fácil de evaluar
-3. Se vea profesional en GitHub (portafolio)
-4. Mantenga simplicidad (sin sobreingeniería)
+* Clara para evaluación académica
+* Profesional para portafolio
+* Minimalista pero bien pensada
+* Fácil de ejecutar y entender
 
 ---
 
 ## TAREAS
 
-### 1. Estructura del proyecto (CLAVE)
+### 1. Diagnóstico preciso
 
-Define una estructura en formato árbol que sea:
+Analiza la estructura actual e identifica:
 
-* Clara
-* Minimalista
-* Profesional
-
-Debe incluir SOLO lo necesario, por ejemplo:
-
-* notebooks/
-* data/
-* src/ (ligero, no sobrecargado)
-* models/
-* reports/
-* app/ o demo/
-
-Cada carpeta debe tener:
-
-* Propósito claro
-* Uso real dentro del proyecto
+* Archivos/carpetas innecesarios
+* Duplicaciones (ej: preprocessing duplicado)
+* Problemas de organización
+* Elementos que afectan claridad o evaluación
 
 ---
 
-### 2. Estructura del notebook (CRÍTICO PARA LA NOTA)
+### 2. Estructura optimizada (SIN SOBREINGENIERÍA)
 
-Define una estructura perfecta del notebook alineada EXACTAMENTE con la rúbrica:
+Proporciona una versión mejorada en formato árbol:
 
-* Introducción
-* Formulación del problema
-* Dataset
-* EDA
-* Preprocesamiento
-* Modelo 1 (Lineal)
-* Modelo 2 (Random Forest)
-* Evaluación comparativa
-* Sistema interactivo
-* Análisis crítico
-* Conclusiones
+* Mantén lo útil
+* Elimina lo redundante
+* Reubica lo mal organizado
 
-Para cada sección indica:
+Debe incluir SOLO lo necesario para:
 
-* Qué incluir
-* Qué mostrar (gráficos, tablas, código)
-* Qué evitar
-
----
-
-### 3. Flujo del sistema (END-TO-END)
-
-Describe el flujo ideal:
-
-* Ingesta de datos
-* Limpieza
-* Transformación
-* Entrenamiento (ambos modelos)
+* Notebook principal
+* Modelos (2 obligatorios)
 * Evaluación
-* Comparación
-* Predicción
-
-Debe ser simple, lineal y entendible.
+* Sistema interactivo
 
 ---
 
-### 4. Código mínimo profesional (SIN EXCESO)
+### 3. Limpieza quirúrgica
 
-Define qué archivos sí valen la pena en `src/`:
+Indica específicamente:
 
-Ejemplo esperado:
+* Qué eliminar (ej: **pycache**, duplicados, archivos innecesarios)
+* Qué mover
+* Qué renombrar
+
+Sé directo (tipo checklist accionable)
+
+---
+
+### 4. Simplificación de `src/` (CRÍTICO)
+
+Actualmente hay señales de duplicación (`src/` y `src/projectai/`).
+
+Define una estructura limpia como:
 
 * preprocessing.py
 * train.py
 * predict.py
 
-Evita:
-
-* arquitectura compleja
-* patrones innecesarios
+Y elimina cualquier duplicación innecesaria.
 
 ---
 
-### 5. Sistema interactivo (OBLIGATORIO)
+### 5. Notebook (DONDE SE GANA LA NOTA)
 
-Propón la forma MÁS simple y efectiva:
+Valida que el notebook:
 
-* Notebook interactivo o Streamlit
-* Inputs:
+* Cumpla exactamente con la rúbrica
+* Sea el centro del proyecto
+* No dependa de estructura compleja
 
-  * tamaño
-  * ubicación
-  * habitaciones
-* Outputs:
-
-  * predicción por modelo
-  * comparación
-
-Debe ser fácil de demostrar en evaluación.
+Sugiere mejoras si aplica.
 
 ---
 
-### 6. Evaluación experimental
+### 6. Sistema interactivo
 
-Define cómo presentar:
+Evalúa:
 
-* Métricas claras en tabla
-* Comparación directa entre modelos
-* Visualizaciones simples pero efectivas
+* `app/streamlit_app.py`
 
----
+Y define si:
 
-### 7. Análisis crítico (DONDE SE GANA LA NOTA)
-
-Explica qué incluir:
-
-* Overfitting vs underfitting
-* Limitaciones del dataset
-* Sesgos
-* Qué mejorarías con más tiempo
+* Está bien ubicado
+* Es suficiente
+* Cómo mejorarlo SIN complicarlo
 
 ---
 
-### 8. Toques de portafolio (SIN ROMPER EL ALCANCE)
+### 7. Toques de portafolio (SIN ROMPER EL ALCANCE)
 
-Sugiere mejoras ligeras que suman valor visual/profesional:
+Sugiere mejoras pequeñas pero potentes:
 
-* README bien estructurado
-* Capturas del sistema interactivo
-* Explicación clara del problema
+* README (estructura ideal)
+* Organización visual
+* Qué mostrar para impresionar reclutadores
 
 SIN agregar:
 
 * despliegues complejos
-* microservicios
+* MLOps
 * pipelines industriales
 
 ---
@@ -190,10 +136,9 @@ SIN agregar:
 
 Entrega:
 
-1. Estructura del proyecto (árbol)
-2. Explicación breve de cada carpeta
-3. Estructura ideal del notebook
-4. Flujo del sistema
-5. Recomendaciones prácticas
+1. Diagnóstico claro
+2. Nueva estructura (árbol)
+3. Lista de cambios (eliminar / mover / renombrar)
+4. Recomendaciones prácticas
 
-Sé directo, práctico y enfocado en maximizar impacto académico + valor de portafolio.
+Sé directo, sin relleno, enfocado en impacto real.
