@@ -62,8 +62,11 @@ outputs/
 *.joblib
 
 # Data files (opcional)
-# /house-prices-advanced-regression-techniques/*.csv
-# /data/raw/*
+# Ignorar datos RAW (recomendado). Para versionar un archivo pequeño de control,
+# deje `data/raw/.gitkeep` y quite la negación si necesita versionar datasets.
+data/raw/*
+!data/raw/.gitkeep
+#/house-prices-advanced-regression-techniques/*.csv
 
 # Secrets and environment
 .env.local
