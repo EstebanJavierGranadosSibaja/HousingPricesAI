@@ -22,34 +22,31 @@ Este archivo contiene la selección de variables y valores recomendados para usa
 
 ## Variables seleccionadas
 
-- `MSSubClass`: Tipo de vivienda (excluyendo valores poco frecuentes o irrelevantes)
-- `MSZoning`: Clasificación de zona (mantener solo RL, RM, FV, RH)
-- `LotFrontage`: Metros lineales de frente de lote
-- `LotArea`: Área del lote
-- `Neighborhood`: Vecindario
 - `OverallQual`: Calidad general
-- `OverallCond`: Condición general
-- `YearBuilt`: Año de construcción
-- `YearRemodAdd`: Año de remodelación
-- `TotalBsmtSF`: Área total de sótano
-- `1stFlrSF`: Área primer piso
-- `2ndFlrSF`: Área segundo piso
 - `GrLivArea`: Área habitable sobre el nivel del suelo
-- `FullBath`: Baños completos
-- `HalfBath`: Medios baños
-- `BedroomAbvGr`: Dormitorios sobre el nivel del suelo
-- `KitchenAbvGr`: Cocinas sobre el nivel del suelo
-- `KitchenQual`: Calidad de la cocina
-- `TotRmsAbvGrd`: Total de habitaciones sobre el nivel del suelo
-- `Fireplaces`: Número de chimeneas
+- `TotalBsmtSF`: Área total de sótano
+- `BsmtFinSF1`: Área terminada del sótano tipo 1
+- `1stFlrSF`: Área primer piso
 - `GarageCars`: Capacidad de autos en garaje
+- `LotArea`: Área del lote
 - `GarageArea`: Área del garaje
-- `SaleType`: Tipo de venta (mantener solo WD, New, COD, Con, CWD)
-- `SaleCondition`: Condición de venta (mantener solo Normal, Partial)
+- `YearRemodAdd`: Año de remodelación
+- `YearBuilt`: Año de construcción
+- `FullBath`: Baños completos
+- `OpenPorchSF`: Área de porche abierto
+- `2ndFlrSF`: Área segundo piso
+- `LotFrontage`: Metros lineales de frente de lote
+- `GarageYrBlt`: Año de construcción del garaje
+- `TotRmsAbvGrd`: Total de habitaciones sobre el nivel del suelo
+- `BsmtUnfSF`: Área sin terminar del sótano
+- `WoodDeckSF`: Área de terraza de madera
+- `MoSold`: Mes de venta
+- `OverallCond`: Condición general
 - `SalePrice`: Precio de venta (variable objetivo)
 
 ## Exclusiones y filtros
 
-- Se excluyen variables de identificación (Id), variables con muchos valores faltantes o poco informativas (Alley, PoolQC, Fence, MiscFeature).
-- Se excluyen variables con alta redundancia o difícil interpretación directa para el modelo base.
-- Para variables categóricas, se recomienda agrupar valores poco frecuentes en "Other" o eliminarlos si son irrelevantes.
+- Se excluyen variables de identificación (`Id`), y aquellas con importancia predictiva muy baja según el análisis de Random Forest (menor o igual a 0.60%) como `MasVnrArea`, `BedroomAbvGr`, `Fireplaces`, `MSSubClass`, `YrSold`, `HalfBath`, y `BsmtFullBath`.
+- Se excluyen variables con correlaciones negativas muy cercanas a cero con `SalePrice` como `Id` y `YrSold`.
+- Se mantienen variables categóricas relevantes que, aunque no aparezcan en los análisis numéricos, aportan contexto valioso (ej. `Neighborhood`, `MSZoning`, `KitchenQual`, `SaleCondition`).
+- Para variables categóricas, se recomienda agrupar valores poco frecuentes en "Other" o eliminarlos si son irrelevantes para evitar sobreajuste.

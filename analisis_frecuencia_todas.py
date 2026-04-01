@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -7,10 +9,11 @@ os.system("cls" if os.name == "nt" else "clear")
 
 # Rutas de los archivos (ajusta si es necesario)
 # folder = "house-prices-advanced-regression-techniques\\"
-folder = "output\\"
 
-train_path = os.path.join(os.path.dirname(__file__), folder + "train.csv")
-test_path = os.path.join(os.path.dirname(__file__), folder + "test.csv")
+base_path = Path(__file__).parent
+
+train_path = base_path / "output" / "train.csv"
+test_path = base_path / "output" / "test.csv"
 
 # Cargar los datos
 df_train = pd.read_csv(train_path)

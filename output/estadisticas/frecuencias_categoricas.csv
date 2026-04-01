@@ -2,8 +2,7 @@ variable,valor,frecuencia
 MSZoning,RL,1151
 MSZoning,RM,218
 MSZoning,FV,65
-MSZoning,RH,16
-MSZoning,Otro,10
+MSZoning,Otro,26
 LotShape,Reg,925
 LotShape,IR1,484
 LotShape,IR2,41
@@ -27,14 +26,13 @@ Neighborhood,BrkSide,58
 Neighborhood,Crawfor,51
 Neighborhood,Mitchel,49
 Neighborhood,NoRidge,41
+Neighborhood,Otro,39
 Neighborhood,Timber,38
 Neighborhood,IDOTRR,37
 Neighborhood,ClearCr,28
 Neighborhood,SWISU,25
 Neighborhood,StoneBr,25
-Neighborhood,Otro,22
 Neighborhood,MeadowV,17
-Neighborhood,Blmngtn,17
 Neighborhood,BrDale,16
 BldgType,1Fam,1220
 BldgType,TwnhsE,114

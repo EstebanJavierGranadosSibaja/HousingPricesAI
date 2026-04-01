@@ -1,8 +1,8 @@
 ,count,unique,top,freq
-MSZoning,1460,5,RL,1151
+MSZoning,1460,4,RL,1151
 LotShape,1460,4,Reg,925
 LotConfig,1460,5,Inside,1052
-Neighborhood,1460,23,NAmes,225
+Neighborhood,1460,22,NAmes,225
 BldgType,1460,5,1Fam,1220
 HouseStyle,1460,6,1Story,726
 RoofStyle,1460,3,Gable,1141
