@@ -34,4 +34,5 @@
 - SaleType
 
 ## Shape train: (1460, 51)
+
 ## Shape test:  (1459, 50)
