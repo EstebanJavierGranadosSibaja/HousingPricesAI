@@ -24,7 +24,7 @@ df_test["SalePrice"] = None  # Añadir columna vacía para igualar columnas
 df_all = pd.concat([df_train, df_test], ignore_index=True)
 
 # Crear carpeta de salida para las gráficas
-output_dir = os.path.join(os.path.dirname(__file__), "output\\graficas_frecuencia-new")
+output_dir = os.path.join(os.path.dirname(__file__), "output\\graficas_frecuencia")
 os.makedirs(output_dir, exist_ok=True)
 
 # Analizar todas las columnas
