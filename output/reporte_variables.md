@@ -323,4 +323,3 @@ Abnorml, AdjLand, Alloca, Family, Normal, Partial
 ## SalePrice
 
 [Datos numéricos variables]
-
