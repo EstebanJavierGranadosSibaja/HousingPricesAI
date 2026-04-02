@@ -22,31 +22,38 @@ Este archivo contiene la selección de variables y valores recomendados para usa
 
 ## Variables seleccionadas
 
-- `OverallQual`: Calidad general
-- `GrLivArea`: Área habitable sobre el nivel del suelo
-- `TotalBsmtSF`: Área total de sótano
-- `BsmtFinSF1`: Área terminada del sótano tipo 1
-- `1stFlrSF`: Área primer piso
-- `GarageCars`: Capacidad de autos en garaje
-- `LotArea`: Área del lote
-- `GarageArea`: Área del garaje
+**Variables Numéricas (12):**
+
+- `OverallQual`: Calidad general de materiales y acabados (#1 en importancia)
+- `GrLivArea`: Área habitable total sobre el nivel del suelo
+- `TotalBsmtSF`: Área total del sótano
+- `1stFlrSF`: Área del primer piso
+- `GarageCars`: Capacidad de autos en el garaje (más correlacionado que GarageArea)
+- `LotArea`: Tamaño del lote
+- `YearBuilt`: Año de construcción (indica modernidad)
 - `YearRemodAdd`: Año de remodelación
-- `YearBuilt`: Año de construcción
-- `FullBath`: Baños completos
-- `OpenPorchSF`: Área de porche abierto
-- `2ndFlrSF`: Área segundo piso
-- `LotFrontage`: Metros lineales de frente de lote
-- `GarageYrBlt`: Año de construcción del garaje
-- `TotRmsAbvGrd`: Total de habitaciones sobre el nivel del suelo
-- `BsmtUnfSF`: Área sin terminar del sótano
-- `WoodDeckSF`: Área de terraza de madera
-- `MoSold`: Mes de venta
-- `OverallCond`: Condición general
-- `SalePrice`: Precio de venta (variable objetivo)
+- `FullBath`: Número de baños completos
+- `TotRmsAbvGrd`: Total de habitaciones (sin incluir baños)
+- `Fireplaces`: Número de chimeneas (indicador de lujo)
+- `OverallCond`: Condición general de la vivienda
 
-## Exclusiones y filtros
+**Variables Categóricas (8):**
 
-- Se excluyen variables de identificación (`Id`), y aquellas con importancia predictiva muy baja según el análisis de Random Forest (menor o igual a 0.60%) como `MasVnrArea`, `BedroomAbvGr`, `Fireplaces`, `MSSubClass`, `YrSold`, `HalfBath`, y `BsmtFullBath`.
-- Se excluyen variables con correlaciones negativas muy cercanas a cero con `SalePrice` como `Id` y `YrSold`.
-- Se mantienen variables categóricas relevantes que, aunque no aparezcan en los análisis numéricos, aportan contexto valioso (ej. `Neighborhood`, `MSZoning`, `KitchenQual`, `SaleCondition`).
-- Para variables categóricas, se recomienda agrupar valores poco frecuentes en "Other" o eliminarlos si son irrelevantes para evitar sobreajuste.
+- `Neighborhood`: Ubicación física (crítico para el valor del suelo)
+- `ExterQual`: Calidad de los materiales exteriores
+- `KitchenQual`: Calidad de la cocina
+- `BsmtQual`: Calidad/altura del sótano
+- `Foundation`: Tipo de cimentación (indicador estructural)
+- `MSZoning`: Clasificación de zona (Residencial, Comercial, etc.)
+- `SaleCondition`: Condición de la venta
+- `CentralAir`: Presencia de aire acondicionado central (binario)
+
+## Exclusiones y Justificación de Refinamiento (Simplificación del Modelo)
+
+Para mejorar la robustez y evitar la multicolinealidad, se han realizado los siguientes ajustes:
+
+1. **Eliminación por Redundancia**: Se eliminó `GarageYrBlt` (redundante con `YearBuilt`) y `GarageArea` (redundante con `GarageCars`).
+2. **Eliminación por Bajo Impacto/Ruido**: Se eliminaron `MoSold` (mes de venta) y `YrSold` debido a su bajísima correlación con el precio final.
+3. **Eliminación por Variables de Desglose**: Se prefiere usar `TotalBsmtSF` en lugar de sus desgloses (`BsmtFinSF1`, `BsmtUnfSF`) para evitar ruido estadístico, manteniendo `BsmtQual` para capturar la "calidad" de ese espacio.
+4. **Inclusión de Variables de Valor Real**: Se añadieron `CentralAir` y `Fireplaces` porque, aunque no siempre dominan en importancia estadística lineal, son características de alto valor para los compradores.
+5. **Simplificación de Áreas Exteriores**: Se eliminaron indicadores de porche específicos (`OpenPorchSF`, `WoodDeckSF`) para centrar el modelo en la estructura principal.
