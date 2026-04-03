@@ -10,6 +10,8 @@ env/
 ENV/
 .env
 
+/COMPAÑERO
+
 # Distribution / packaging
 build/
 dist/
