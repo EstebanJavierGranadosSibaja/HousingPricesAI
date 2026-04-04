@@ -16,6 +16,7 @@ ENV/
 build/
 dist/
 *.egg-info/
+*.dist-info/
 .eggs/
 
 # Installer logs
@@ -39,6 +40,7 @@ coverage.xml
 
 # Jupyter
 .ipynb_checkpoints/
+notebooks/*-checkpoint.ipynb
 
 # VS Code
 .vscode/
@@ -63,12 +65,19 @@ outputs/
 *.pkl
 *.joblib
 
-# Data files (opcional)
-# Ignorar datos RAW (recomendado). Para versionar un archivo pequeño de control,
-# deje `data/raw/.gitkeep` y quite la negación si necesita versionar datasets.
+# Data files
+# Se ignora todo por defecto, pero se versionan los archivos minimos para
+# que el proyecto funcione al clonar en otra maquina.
 data/raw/*
 !data/raw/.gitkeep
-#/house-prices-advanced-regression-techniques/*.csv
+!data/raw/train.csv
+!data/raw/test.csv
+!data/raw/sample_submission.csv
+data/processed/*.csv
+!data/processed/.gitkeep
+
+# Generated reports
+reports/diagnostics/*
 
 # Secrets and environment
 .env.local
@@ -79,12 +88,6 @@ secrets/
 
 # Python packaging leftovers
 *.egg
-*.egg-info/
-*.dist-info/
-
-# Byte-compiled / caches
-*.pyc
-*.pyo
 
 # Windows shortcuts
 *.lnk
