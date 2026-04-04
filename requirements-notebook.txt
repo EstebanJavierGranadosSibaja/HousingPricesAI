@@ -1,0 +1,11 @@
+-r requirements.txt
+
+# Optional dependencies for exploratory notebooks/experiments
+matplotlib
+seaborn
+jupyter
+notebook
+plotly
+xgboost
+lightgbm
+catboost

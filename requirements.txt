@@ -1,12 +1,6 @@
+# Core runtime dependencies (train, predict, app)
 pandas
 numpy
 scikit-learn
-matplotlib
-seaborn
-jupyter
-notebook
-plotly
-xgboost
 joblib
 streamlit
-gradio
