@@ -13,7 +13,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from preprocessing import build_preprocessor, get_training_frame
+from src.preprocessing import build_preprocessor, get_training_frame
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TRAIN_PATH = PROJECT_ROOT / "data" / "raw" / "train.csv"
@@ -32,18 +32,16 @@ def calculate_metrics(y_true: pd.Series, y_pred: pd.Series) -> dict[str, float]:
 
 
 def build_models() -> dict[str, Pipeline]:
-    preprocessor = build_preprocessor()
-
     linear_pipeline = Pipeline(
         steps=[
-            ("preprocessor", preprocessor),
+            ("preprocessor", build_preprocessor()),
             ("model", LinearRegression()),
         ]
     )
 
     rf_pipeline = Pipeline(
         steps=[
-            ("preprocessor", preprocessor),
+            ("preprocessor", build_preprocessor()),
             (
                 "model",
                 RandomForestRegressor(

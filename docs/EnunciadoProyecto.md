@@ -38,6 +38,7 @@ Predecir el precio de una vivienda en función de sus características principal
 - Tamaño (m²)
 - Ubicación
 - Número de habitaciones
+- Y más que sean necesarias
 
 ### Variable de salida
 
