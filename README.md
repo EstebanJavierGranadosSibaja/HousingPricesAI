@@ -119,7 +119,7 @@ python -m src.predict --tamano 120 --ubicacion NAmes --habitaciones 3
 Notas:
 
 - Se usan las entradas del usuario exigidas por el enunciado (`tamano`, `ubicacion`, `habitaciones`).
-- La inferencia se ejecuta con todas las variables definidas en `data/features.json`.
+- La inferencia se ejecuta con las 22 variables definidas en `data/features.json`.
 - El script completa automaticamente el resto de variables con defaults (mediana/moda) tomados de `data/raw/train.csv`.
 
 ## Diagnostico de variables
@@ -145,6 +145,8 @@ Salida esperada en `reports/diagnostics/`:
 ```bash
 python -m streamlit run app/streamlit_app.py
 ```
+
+La app organiza la experiencia en pestañas de prediccion, contexto e historial, con modo rapido y modo completo, mas un simulador A/B para evaluar mejoras de la vivienda.
 
 ## Flujo del proyecto
 
