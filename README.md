@@ -146,12 +146,17 @@ Salida esperada en `reports/diagnostics/`:
 python -m streamlit run app/streamlit_app.py
 ```
 
-La app organiza la experiencia en pestañas de prediccion, contexto e historial, con modo rapido y modo completo, mas un simulador A/B para evaluar mejoras de la vivienda.
+La app tiene una interfaz limpia: en el panel lateral se ajustan las caracteristicas clave de la vivienda (el resto se completa con valores tipicos) y al calcular muestra el precio estimado con su rango probable, la comparacion entre Regresion Lineal y Random Forest, la importancia de variables del modelo y la tabla de rendimiento (MAE, MSE, RMSE, R2). Incluye validacion de entradas y manejo de errores (avisa si faltan modelos entrenados).
 
 ## Flujo del proyecto
 
-1. Ingesta de datos desde `data/raw/train.csv`.
-2. Limpieza y transformacion (`src/preprocessing.py`).
-3. Entrenamiento de Regresion Lineal y Random Forest (`src/train.py`).
-4. Evaluacion comparativa con MAE, MSE, RMSE y R2.
-5. Prediccion en CLI o Streamlit (`src/predict.py`, `app/streamlit_app.py`).
+1. Formulacion del problema (variable objetivo, predictores, tipo de tarea).
+2. Ingesta de datos desde `data/raw/train.csv`.
+3. Analisis exploratorio (EDA): distribucion del precio, correlaciones, outliers y sesgo geografico, cada uno con interpretacion tecnica.
+4. Limpieza y transformacion con Pipeline + ColumnTransformer (`src/preprocessing.py`).
+5. Entrenamiento de Regresion Lineal y Random Forest (`src/train.py`).
+6. Validacion cruzada (KFold=5) y ajuste de hiperparametros (GridSearchCV) en el notebook.
+7. Evaluacion comparativa con MAE, MSE, RMSE y R2, mas analisis de residuos, errores grandes, importancia de variables y diagnostico de sobreajuste.
+8. Prediccion en CLI o Streamlit (`src/predict.py`, `app/streamlit_app.py`).
+
+El detalle metodologico completo esta en `notebooks/01_housing_prices_proyecto_final.ipynb` y el documento tecnico en `docs/document.md`.

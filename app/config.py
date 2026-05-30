@@ -9,8 +9,6 @@ MODELS_DIR = PROJECT_ROOT / "models"
 DATA_PATH = PROJECT_ROOT / "data" / "raw" / "train.csv"
 METRICS_PATH = PROJECT_ROOT / "reports" / "metrics_comparison.csv"
 
-PRIMARY_INPUTS = ["GrLivArea", "Neighborhood", "BedroomAbvGr"]
-
 INTEGER_LIKE_FEATURES = {
     "YearBuilt",
     "YearRemodAdd",
@@ -103,7 +101,7 @@ FEATURE_METADATA: dict[str, dict[str, str]] = {
     },
     "OverallQual": {
         "label": "Calidad general de materiales y acabados",
-        "help": "Puntaje 1-10 estimado con reglas basadas en materiales, acabados y estado.",
+        "help": "Puntaje de 1 (muy basica) a 10 (lujo) de materiales y acabados.",
     },
     "OverallCond": {
         "label": "Estado general de conservacion",
@@ -275,137 +273,5 @@ CATEGORICAL_OPTION_LABELS_BY_FEATURE: dict[str, dict[str, str]] = {
         "RL": "Residencial baja densidad",
         "RM": "Residencial media densidad",
         "Missing": "Sin dato",
-    },
-}
-
-OVERALL_CONDITION_CHOICES: list[tuple[str, int]] = [
-    ("Necesita reparaciones importantes", 2),
-    ("Estado regular con desgaste visible", 4),
-    ("Estado funcional y estable", 6),
-    ("Buena conservacion", 8),
-    ("Excelente conservacion", 9),
-]
-
-QUALITY_MATERIAL_FACTS: dict[str, int] = {
-    "Madera basica o prefabricado": 2,
-    "Concreto y bloque estandar": 4,
-    "Ladrillo o piedra de buena calidad": 6,
-    "Metal estructural con acabados premium": 8,
-    "Marmol o piedra de lujo": 9,
-}
-
-QUALITY_FINISH_FACTS: dict[str, int] = {
-    "Acabados basicos": 1,
-    "Acabados estandar": 2,
-    "Acabados buenos": 3,
-    "Acabados premium": 4,
-    "Acabados de lujo": 5,
-}
-
-QUALITY_CONDITION_FACTS: dict[str, int] = {
-    "Necesita remodelacion mayor": 1,
-    "Estado regular": 2,
-    "Estado funcional": 3,
-    "Muy bien mantenida": 4,
-    "Estado excelente": 5,
-}
-
-QUALITY_CODE_BY_LEVEL = {
-    1: "Po",
-    2: "Fa",
-    3: "TA",
-    4: "Gd",
-    5: "Ex",
-}
-
-QUALITY_LEVEL_BY_CODE = {
-    "Po": 1,
-    "Fa": 2,
-    "TA": 3,
-    "Gd": 4,
-    "Ex": 5,
-}
-
-QUALITY_CATEGORY_RULESETS: dict[str, dict[str, object]] = {
-    "KitchenQual": {
-        "intro": "Calidad de cocina segun materiales, acabados y estado.",
-        "material_question": "1) Material principal de encimeras/muebles",
-        "material_facts": {
-            "Laminado basico": 1,
-            "Madera estandar": 2,
-            "Granito o cuarzo": 4,
-            "Marmol o piedra premium": 5,
-        },
-        "finish_question": "2) Nivel de equipamiento y acabados",
-        "finish_facts": {
-            "Basico": 1,
-            "Estandar": 2,
-            "Bueno": 3,
-            "Premium": 4,
-            "Lujo": 5,
-        },
-        "condition_question": "3) Estado actual de la cocina",
-        "condition_facts": {
-            "Desgastada": 1,
-            "Funcional": 2,
-            "Buena": 3,
-            "Muy buena": 4,
-            "Excelente": 5,
-        },
-    },
-    "ExterQual": {
-        "intro": "Calidad exterior segun material de fachada y estado.",
-        "material_question": "1) Material predominante de fachada",
-        "material_facts": {
-            "Revestimiento economico": 1,
-            "Bloque o concreto estandar": 2,
-            "Ladrillo": 3,
-            "Piedra de buena calidad": 4,
-            "Piedra premium o marmol": 5,
-        },
-        "finish_question": "2) Nivel de acabado exterior",
-        "finish_facts": {
-            "Basico": 1,
-            "Estandar": 2,
-            "Bueno": 3,
-            "Premium": 4,
-            "Lujo": 5,
-        },
-        "condition_question": "3) Estado de fachada y pintura",
-        "condition_facts": {
-            "Deteriorado": 1,
-            "Regular": 2,
-            "Bueno": 3,
-            "Muy bueno": 4,
-            "Excelente": 5,
-        },
-    },
-    "BsmtQual": {
-        "intro": "Calidad de sotano segun estructura, acabados y estado.",
-        "material_question": "1) Estructura y material predominante del sotano",
-        "material_facts": {
-            "No aplica (sin sotano)": 0,
-            "Concreto basico": 2,
-            "Concreto reforzado": 3,
-            "Concreto reforzado premium": 5,
-        },
-        "finish_question": "2) Nivel de acabado del sotano",
-        "finish_facts": {
-            "No aplica (sin sotano)": 0,
-            "Sin terminar": 1,
-            "Semi terminado": 2,
-            "Terminado funcional": 3,
-            "Terminado premium": 5,
-        },
-        "condition_question": "3) Estado actual del sotano",
-        "condition_facts": {
-            "Sin sotano": 0,
-            "Con humedad o deterioro": 1,
-            "Regular": 2,
-            "Bueno": 3,
-            "Muy bueno": 4,
-            "Excelente": 5,
-        },
-        "none_condition": "Sin sotano",
     },
 }
