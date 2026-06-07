@@ -54,9 +54,8 @@ HousingPricesAI/
 │   ├── metrics_comparison.csv
 │   └── ablation_study.csv
 ├── docs/
-│   ├── EnunciadoProyecto.md
-│   ├── document.md
-│   ├── DEFENSA/             # documentos de entrega academica
+│   ├── EnunciadoProyecto.md # enunciado del proyecto
+│   ├── document.md          # documento tecnico (convierte a PDF para entregar)
 │   └── dataset/             # descripcion de variables (EN + ES)
 ├── tests/
 │   ├── test_pipeline.py     # 8 tests: pipeline, transformadores, metricas

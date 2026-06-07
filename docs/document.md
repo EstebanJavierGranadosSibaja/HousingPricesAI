@@ -8,6 +8,14 @@
 
 ---
 
+## Introducción
+
+Este documento describe el diseño, implementación y evaluación de un sistema de predicción de precios de viviendas basado en técnicas de Machine Learning. El sistema modela el precio de venta de una propiedad (`SalePrice`) a partir de 22 características físicas, de calidad y ubicación, utilizando el dataset Ames Housing.
+
+Se implementaron y compararon dos modelos: **Regresión Lineal** (línea base interpretable) y **Random Forest** (modelo de conjunto no lineal). El proyecto cubre el ciclo completo: formulación del problema, análisis exploratorio, preprocesamiento con pipeline reproducible, entrenamiento, evaluación experimental con métricas estándar de regresión, y un sistema interactivo con interfaz Streamlit y predicción por consola.
+
+---
+
 ## 1. Formulación del problema
 
 ### 1.1 Definición
