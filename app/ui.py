@@ -152,15 +152,33 @@ def inject_styles(mode: str = "dark") -> None:
         .ptable tr.best td {{ font-weight: 700; }}
         .ptable .badge {{ background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent) !important; padding: 0.12rem 0.5rem; border-radius: 999px; font-size: 0.74rem; font-weight: 700; margin-left: 0.4rem; }}
 
-        /* Buttons */
-        .stButton > button, .stFormSubmitButton > button {{
+        /* Primary buttons — golden gradient */
+        .stButton > [data-testid="stBaseButton-primary"],
+        .stFormSubmitButton > button {{
             width: 100%; border-radius: 12px; border: 0; padding: 0.68rem 1rem;
             background: linear-gradient(90deg, var(--accent), var(--accent2));
             color: #1a1407 !important; font-weight: 800; letter-spacing: 0.01em;
             box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 28%, transparent);
         }}
-        .stButton > button:hover, .stFormSubmitButton > button:hover {{ filter: brightness(1.06); }}
-        .stButton > button p, .stFormSubmitButton > button p {{ color: #1a1407 !important; }}
+        .stButton > [data-testid="stBaseButton-primary"]:hover,
+        .stFormSubmitButton > button:hover {{ filter: brightness(1.06); }}
+        .stButton > [data-testid="stBaseButton-primary"] p,
+        .stFormSubmitButton > button p {{ color: #1a1407 !important; }}
+
+        /* Secondary buttons — visible panel style, clearly distinct from primary */
+        .stButton > [data-testid="stBaseButton-secondary"] {{
+            width: 100%; border-radius: 12px; padding: 0.65rem 1rem;
+            background: var(--input_bg) !important;
+            border: 1.5px solid var(--input_border) !important;
+            color: var(--label) !important; font-weight: 700 !important;
+            box-shadow: none !important; letter-spacing: 0.01em;
+        }}
+        .stButton > [data-testid="stBaseButton-secondary"]:hover {{
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+            background: color-mix(in srgb, var(--accent) 8%, var(--input_bg)) !important;
+        }}
+        .stButton > [data-testid="stBaseButton-secondary"] p {{ color: var(--label) !important; }}
 
         [data-testid="stExpander"] {{ border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }}
         .stAlert {{ border-radius: 14px; }}

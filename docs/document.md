@@ -108,23 +108,94 @@ validación cruzada (KFold=5) se ejecuta **solo sobre el conjunto de entrenamien
 - **Modelo 2 — Random Forest:** modelo no lineal, capta interacciones sin
   ingeniería manual extensa.
 
-**Ajuste de hiperparámetros:** `GridSearchCV` con KFold=5 y scoring por RMSE.
-Grillas: `fit_intercept`/`positive` (lineal); `n_estimators`, `max_depth`,
-`min_samples_split`, `min_samples_leaf`, `max_features` (Random Forest).
+**Ajuste de hiperparámetros:** el **notebook** documenta la búsqueda con
+`GridSearchCV` (KFold=5, scoring por RMSE). Grillas: `fit_intercept`/`positive`
+(lineal); `n_estimators`, `max_depth`, `min_samples_split`, `min_samples_leaf`,
+`max_features` (Random Forest).
+
+**Modelo final seleccionado: Random Forest.** Random Forest fue seleccionado como
+modelo final del sistema porque obtuvo el mejor desempeño predictivo en el conjunto de
+prueba. La Regresión Lineal con transformación logarítmica (`log1p`) se reconoce como
+una alternativa metodológicamente sólida, más estable y con menor riesgo de sobreajuste,
+pero no fue seleccionada como modelo operativo debido a que presentó un desempeño
+predictivo inferior en test. La diferencia entre modelos no es estadísticamente
+significativa (p ≈ 0.13), por lo que se despliega el mejor estimador puntual en test
+(Random Forest) y se muestran ambos al usuario para una decisión informada.
+
+**Modelo servido (fuente de verdad).** El artefacto de producción
+(`models/*.joblib`) y todas las métricas oficiales provienen de `src/train.py`,
+que entrena la configuración **base** del Random Forest (`n_estimators=300`,
+`random_state=42`). El tuning del notebook es **reproducible desde producción**
+con `python -m src.train --tune`, que ejecuta el mismo GridSearchCV y persiste el
+modelo ajustado. Las métricas de esta sección corresponden al modelo base servido.
 
 ---
 
 ## 5. Evaluación experimental
 
-### 5.1 Métricas en el conjunto de prueba (modelos tras tuning)
+### 5.1 Métricas en el conjunto de prueba (modelo base servido)
 
-| Modelo | MAE | RMSE | R² |
+> Generadas por `src/train.py` y almacenadas en `reports/metrics_comparison.csv`
+> (fuente única de verdad, consumida también por la app).
+
+| Modelo | MAE | RMSE test | R² test |
 |---|---|---|---|
-| **Random Forest** (ganador) | ≈ 17.065 | **28.253** | **0.896** |
-| Regresión Lineal | — | 31.947 | 0.866 |
+| Random Forest | 17.198 | **27.449** | **0.9018** |
+| Regresión Lineal | 18.171 | 32.001 | 0.8665 |
 
-El **Random Forest gana** por menor RMSE en prueba. El MAPE del modelo ganador es
-**10.7%**, indicador interpretable del error relativo promedio.
+En la **partición de prueba** el Random Forest obtiene menor RMSE. El MAPE es
+**10.7%** (RF) y **10.2%** (Lineal). **Sin embargo, esta tabla por sí sola no
+justifica elegir un modelo** (ver 5.1.1): el test es una sola partición.
+
+### 5.1.1 Selección por validación cruzada e incertidumbre (anti sesgo de selección)
+
+Elegir el modelo por su RMSE en el test introduce **sesgo de selección** (se usa el
+mismo conjunto para elegir y para reportar). La selección se hace por **validación
+cruzada KFold=5 sobre el train**, reportando la incertidumbre:
+
+| Modelo | CV RMSE (media ± std) | Test RMSE |
+|---|---|---|
+| Regresión Lineal | **29.994 ± 4.396** | 32.001 |
+| Random Forest | 30.406 ± 5.080 | 27.449 |
+
+**Hallazgo clave:** por validación cruzada la Regresión Lineal y el Random Forest son
+**prácticamente equivalentes** (sus intervalos media ± std se solapan ampliamente). En
+una validación cruzada **repetida (5×5 = 25 estimaciones)** la diferencia RF vs Lineal
+**no es estadísticamente significativa** (prueba *t* pareada, **p ≈ 0.13**; RF gana en
+18/25 particiones). La ventaja del Random Forest en el test es, en buena parte, **un
+efecto de esa partición concreta**, no una superioridad robusta. Conclusión honesta:
+**el Random Forest es el mejor estimador puntual, pero no supera de forma significativa
+a la Regresión Lineal.**
+
+### 5.1.2 Transformación del objetivo (`log1p`): la mejora con mayor evidencia
+
+El precio tiene fuerte asimetría positiva (skew 1.88) y residuos heterocedásticos
+(5.2). El tratamiento estándar —y con el que se evalúa este dataset en Kaggle— es
+modelar `log1p(SalePrice)` y revertir con `expm1`. Implementado vía
+`TransformedTargetRegressor` y disponible con `python -m src.train --log-target`:
+
+| Modelo | Test RMSE | R² test | Gap train→test |
+|---|---|---|---|
+| Regresión Lineal **+ log** | **27.339** | **0.9026** | **1.8%** |
+| Random Forest + log | 27.674 | 0.9002 | 59.7% |
+| Regresión Lineal (raw) | 32.001 | 0.8665 | 12.1% |
+| Random Forest (raw) | 27.449 | 0.9018 | 59.9% |
+
+**Evidencia (CV repetida 5×5):** la transformación log mejora a la Regresión Lineal de
+forma **estadísticamente significativa frente a sí misma sin transformar** (`LR+log` vs
+`LR raw`: mejora media ≈ 2.061, **p ≈ 0.002**) y **reduce su sobreajuste de 12.1% a
+1.8%**. El Random Forest **no** mejora con log (p ≈ 0.94: es invariante a la escala). Sin
+embargo, las diferencias de RMSE de **test** entre las mejores configuraciones (`RF` ≈
+27.449 y `LR+log` ≈ 27.339) son del orden de **0.4%, dentro del ruido de muestreo y no
+estadísticamente significativas** (la comparación principal RF vs Lineal da p ≈ 0.13);
+por tanto **no constituyen una base para preferir `LR+log` como modelo operativo**.
+
+**Decisión de modelo final.** El aporte de `log1p` es, sobre todo, **mayor estabilidad y
+menor sobreajuste** del modelo lineal, no una superioridad predictiva robusta en test.
+Por ello **el modelo final del sistema es Random Forest** (mejor desempeño puntual en
+test); **`Regresión Lineal + log` se documenta como una alternativa metodológicamente
+sólida —más estable y mejor calibrada (gap 1.8%)— pero no fue seleccionada como modelo
+operativo**. Es reproducible con `python -m src.train --log-target`.
 
 ### 5.2 Análisis de residuos y errores
 
@@ -140,13 +211,17 @@ El **Random Forest gana** por menor RMSE en prueba. El MAPE del modelo ganador e
 
 | Modelo | RMSE train | RMSE test | Gap |
 |---|---|---|---|
-| Regresión Lineal | 28.245 | 31.947 | 3.702 (11.6%) |
-| Random Forest | 11.043 | 28.253 | 17.210 (60.9%) |
+| Regresión Lineal | 28.137 | 32.001 | 3.864 (12.1%) |
+| Random Forest | 11.012 | 27.449 | 16.437 (59.9%) |
 
-El Random Forest presenta un gap considerable (memoriza parte del ruido del
-entrenamiento), **pero la validación cruzada y la regularización por
-hiperparámetros mantienen el desempeño en prueba superior al modelo lineal**. Por
-eso la selección final se basa en el RMSE de **test**, no de train.
+El Random Forest presenta un gap del ~60% (memoriza parte del ruido del
+entrenamiento), frente al ~12% del modelo lineal. Este gap es la **principal limitación
+reconocida del modelo final**: aunque su RMSE de test es el mejor, generaliza con menos
+margen del que aparenta, por lo que la confianza en el sistema se respalda con la
+validación cruzada (5.1.1) y no solo con el train. La **transformación log reduce el gap
+del modelo lineal a 1.8%** (5.1.2): por eso `Regresión Lineal + log` se documenta como la
+**alternativa mejor calibrada**, aunque **no fue la seleccionada como modelo operativo**
+(su ventaja en test no es estadísticamente significativa).
 
 ---
 
@@ -183,13 +258,23 @@ eso la selección final se basa en el RMSE de **test**, no de train.
   formulación → EDA → preprocesamiento con Pipeline → 2 modelos → validación
   cruzada → tuning → evaluación con análisis de residuos → sistema interactivo →
   análisis crítico.
-- El **Random Forest** es el modelo final (RMSE ≈ 28.253, R² ≈ 0.896, MAPE 10.7%),
-  superando a la Regresión Lineal por su capacidad de modelar no linealidades.
-- La Regresión Lineal aporta **interpretabilidad y estabilidad**; ambos se
-  muestran al usuario para una decisión informada.
-- **Mejoras futuras:** transformar el objetivo con `log1p` para mitigar la
-  heterocedasticidad, incorporar más variables del dataset y validar el modelo
-  con datos de otras regiones/períodos.
+- **Modelo final del sistema: Random Forest.** Fue seleccionado como modelo final
+  porque obtuvo el **mejor desempeño predictivo en el conjunto de prueba**
+  (RMSE ≈ 27.449, R² ≈ 0.902). La **Regresión Lineal con transformación logarítmica
+  (`log1p`)** se reconoce como una **alternativa metodológicamente sólida, más estable y
+  con menor riesgo de sobreajuste** (gap 1.8% frente a ~60% del RF), pero **no fue
+  seleccionada como modelo operativo** debido a que presentó un desempeño predictivo
+  inferior en test.
+- **Matiz estadístico honesto:** la diferencia de desempeño entre los modelos **no es
+  estadísticamente significativa** (prueba *t* pareada, p ≈ 0.13); las diferencias de
+  RMSE en test entre las mejores configuraciones están dentro del ruido de muestreo. La
+  elección del Random Forest se sustenta en su mejor desempeño puntual en test y en la
+  robustez del *ensemble*; la transformación `log1p` es reproducible con
+  `python -m src.train --log-target` y se conserva documentada como alternativa.
+- Ambos modelos se muestran al usuario para una decisión informada.
+- **Mejoras futuras:** incorporar más variables del dataset, usar
+  `permutation_importance`, y validar el modelo con datos de otras regiones/períodos;
+  evaluar `log1p` como línea de mejora de calibración del modelo lineal.
 
 ---
 

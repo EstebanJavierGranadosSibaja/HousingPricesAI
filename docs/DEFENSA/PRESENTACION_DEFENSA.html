@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Predicción de Precio de Viviendas · Defensa</title>
+<style>
+  :root{
+    --bg: radial-gradient(1200px 520px at 50% -10%, rgba(226,178,87,.14), transparent 60%), linear-gradient(180deg,#0d0e13 0%,#0b0c10 45%,#08090c 100%);
+    --ink:#f3f4f6; --muted:#9aa3b2; --line:rgba(255,255,255,.10);
+    --panel:linear-gradient(180deg,#15171f 0%,#121420 100%);
+    --accent:#e2b257; --accent2:#c9923b; --good:#46c08a; --warn:#e2b257; --bad:#e07a5f;
+    --title-grad:linear-gradient(90deg,#ffffff,#f0d8a8);
+    --shadow:0 24px 60px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); overflow:hidden;
+  }
+  /* progress + counter */
+  #progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));z-index:50;transition:width .3s ease}
+  #counter{position:fixed;bottom:18px;right:24px;z-index:50;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  #counter b{color:var(--accent)}
+  #brand{position:fixed;bottom:18px;left:24px;z-index:50;font-size:.74rem;color:var(--muted);letter-spacing:.04em}
+  #hint{position:fixed;top:14px;right:18px;z-index:50;font-size:.7rem;color:var(--muted);opacity:.7}
+  .badge-time{position:fixed;top:14px;left:18px;z-index:50;font-size:.72rem;color:#1a1407;background:linear-gradient(90deg,var(--accent),var(--accent2));padding:.18rem .6rem;border-radius:999px;font-weight:800}
+
+  .deck{height:100vh;width:100vw;position:relative}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:5.5vh 8vw;animation:fade .5s ease;
+  }
+  .slide.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .kicker{color:var(--accent);font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:.8rem;margin-bottom:.7rem}
+  h1{font-size:clamp(2rem,5vw,3.6rem);font-weight:800;letter-spacing:-.02em;line-height:1.05;
+     background:var(--title-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  h2{font-size:clamp(1.5rem,3.4vw,2.4rem);font-weight:800;letter-spacing:-.02em;margin-bottom:1.2rem;line-height:1.1}
+  h2 .dot{color:var(--accent)}
+  p.lead{color:var(--muted);font-size:clamp(1rem,1.7vw,1.3rem);max-width:60ch;line-height:1.5}
+  ul{list-style:none;display:flex;flex-direction:column;gap:.7rem;margin-top:.4rem}
+  li{position:relative;padding-left:1.6rem;font-size:clamp(.95rem,1.5vw,1.18rem);line-height:1.45;color:#e7eaf0}
+  li::before{content:"";position:absolute;left:0;top:.55em;width:8px;height:8px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  li b{color:#fff}
+  .accent{color:var(--accent)}
+  .small{font-size:.92rem;color:var(--muted)}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem;align-items:start}
+  .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1.2rem 1.3rem;box-shadow:var(--shadow)}
+  .card h3{font-size:1rem;color:var(--accent);margin-bottom:.5rem;letter-spacing:.02em}
+  .metric{display:flex;flex-direction:column;gap:.15rem;text-align:center}
+  .metric .v{font-size:clamp(1.5rem,3vw,2.3rem);font-weight:800;color:#fff}
+  .metric .l{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .metrics4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1rem}
+
+  table{width:100%;border-collapse:collapse;font-size:clamp(.85rem,1.4vw,1.05rem);margin-top:.6rem}
+  th{text-align:left;color:var(--muted);font-weight:600;padding:.55rem .6rem;border-bottom:1px solid var(--line);font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
+  td{padding:.6rem .6rem;border-bottom:1px solid var(--line);color:#e7eaf0;font-variant-numeric:tabular-nums}
+  tr.best td{font-weight:800;color:#fff}
+  tr.best td:first-child::after{content:" ★";color:var(--accent)}
+  .pill{display:inline-block;padding:.12rem .55rem;border-radius:999px;font-size:.72rem;font-weight:800}
+  .pill.win{background:rgba(70,192,138,.16);color:var(--good)}
+  .pill.alt{background:rgba(226,178,87,.16);color:var(--accent)}
+  .pill.no{background:rgba(224,122,95,.16);color:var(--bad)}
+
+  /* bar chart */
+  .bars{display:flex;flex-direction:column;gap:.7rem;margin-top:.4rem}
+  .bar-row .top{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:.25rem}
+  .bar-row .top .v{color:var(--muted);font-variant-numeric:tabular-nums}
+  .track{height:14px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+  .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+  .fill.dim{background:linear-gradient(90deg,#566,#7a8699)}
+
+  .flow{display:flex;align-items:stretch;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+  .step{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.8rem .7rem;text-align:center;font-size:.86rem}
+  .step .n{color:var(--accent);font-weight:800;font-size:.74rem;letter-spacing:.05em}
+  .arrow{align-self:center;color:var(--accent);font-size:1.3rem}
+
+  .stance{background:linear-gradient(135deg,#1b1e27,#101218);border:1px solid rgba(226,178,87,.35);border-radius:18px;padding:1.3rem 1.5rem;box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 0 60px rgba(226,178,87,.05);font-size:clamp(.95rem,1.5vw,1.15rem);line-height:1.5}
+  .stance b{color:var(--accent)}
+
+  /* speaker notes */
+  #notes{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#0b0c10ee;border-top:1px solid var(--line);
+         padding:1rem 8vw 1.4rem;display:none;max-height:36vh;overflow:auto;backdrop-filter:blur(8px)}
+  #notes.show{display:block}
+  #notes h4{color:var(--accent);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+  #notes p{color:#d7dbe3;font-size:.98rem;line-height:1.5;max-width:90ch}
+  .title-meta{margin-top:2rem;color:var(--muted);font-size:1.05rem;line-height:1.9}
+  .title-meta .name{color:#fff;font-weight:700}
+  .final-badge{display:inline-block;margin-top:1.4rem;background:rgba(70,192,138,.14);border:1px solid rgba(70,192,138,.4);color:var(--good);padding:.4rem .9rem;border-radius:999px;font-weight:800;font-size:.9rem}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="badge-time" id="time">0:30</div>
+<div id="hint">← → espacio · S = notas · F = pantalla completa</div>
+<div id="brand">IA · Proyecto Final · UNA Brunca</div>
+<div id="counter"><b id="cur">1</b> / <span id="tot">12</span></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 PORTADA -->
+  <section class="slide active" data-time="0:30" data-notes="Buenos días. Presento un sistema de IA que estima el precio de venta de una vivienda a partir de sus características, comparando dos modelos y desplegando el de mejor desempeño: Random Forest.">
+    <div class="kicker">Proyecto Final · Inteligencia Artificial</div>
+    <h1>Predicción de Precio de Viviendas con Machine Learning</h1>
+    <p class="lead" style="margin-top:1rem">Regresión supervisada sobre el dataset <span class="accent">Ames Housing</span> · Regresión Lineal vs Random Forest.</p>
+    <div class="title-meta">
+      <div class="name">Esteban Granados Sibaja</div>
+      Universidad Nacional de Costa Rica — Sede Regional Brunca, Campus Pérez Zeledón
+    </div>
+    <span class="final-badge">Modelo final desplegado: Random Forest</span>
+  </section>
+
+  <!-- 2 OBJETIVO -->
+  <section class="slide" data-time="0:45" data-notes="El objetivo no era solo entrenar un modelo, sino cubrir el ciclo completo: formular, explorar, preprocesar sin fuga de información, comparar con rigor estadístico y entregar un sistema interactivo.">
+    <div class="kicker">Objetivo</div>
+    <h2>Un sistema de IA <span class="dot">de extremo a extremo</span></h2>
+    <div class="cols">
+      <div>
+        <p class="lead"><b style="color:#fff">General:</b> construir un sistema de IA funcional que resuelva un problema real con modelado completo, evaluación experimental y análisis crítico.</p>
+      </div>
+      <div>
+        <ul>
+          <li>Implementar <b>dos modelos comparables</b> (Lineal y Random Forest)</li>
+          <li>Evaluar con métricas de regresión: <b>MAE, MSE, RMSE, R²</b></li>
+          <li>Ofrecer <b>interacción directa</b> con el usuario (CLI + Streamlit)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow" style="margin-top:2rem">
+      <div class="step"><div class="n">01</div>Modelar</div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">02</div>Evaluar</div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">03</div>Interactuar</div>
+    </div>
+  </section>
+
+  <!-- 3 PROBLEMA -->
+  <section class="slide" data-time="0:45" data-notes="Es regresión, no clasificación, porque predecimos una cantidad continua en dólares. Por eso evaluamos con métricas de error continuo y no con exactitud. Lo encuadramos como agente inteligente con PEAS.">
+    <div class="kicker">Problema</div>
+    <h2>¿Cuánto vale una vivienda?</h2>
+    <div class="cols">
+      <div>
+        <ul>
+          <li>Tarea: <b>regresión supervisada</b> (salida continua, en dólares)</li>
+          <li>Variable objetivo <b>y = SalePrice</b></li>
+          <li>Predictores <b>X = 22 variables</b> (físicas, calidad, ubicación)</li>
+        </ul>
+        <div class="flow" style="margin-top:1.6rem">
+          <div class="step">X · 22 features</div>
+          <div class="arrow">→</div>
+          <div class="step">Modelo</div>
+          <div class="arrow">→</div>
+          <div class="step">ŷ · precio</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Encuadre PEAS</h3>
+        <ul>
+          <li><b>P</b>erformance: RMSE/MAE bajos, R² alto</li>
+          <li><b>E</b>nvironment: Ames, Iowa (2006–2010)</li>
+          <li><b>A</b>ctuators: precio + comparación de modelos</li>
+          <li><b>S</b>ensors: vector de 22 características</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 DATASET -->
+  <section class="slide" data-time="1:00" data-notes="Partimos de 81 columnas y reducimos a 22 con criterio técnico: descartamos redundantes como GarageYrBlt o variables de la transacción como SaleCondition. La media mayor que la mediana ya anticipa asimetría.">
+    <div class="kicker">Dataset</div>
+    <h2>Ames Housing <span class="dot">(Kaggle)</span></h2>
+    <div class="metrics4">
+      <div class="card metric"><div class="v">1460</div><div class="l">viviendas</div></div>
+      <div class="card metric"><div class="v">81 → 22</div><div class="l">variables</div></div>
+      <div class="card metric"><div class="v">16 + 6</div><div class="l">num + categóricas</div></div>
+      <div class="card metric"><div class="v">$180.9k</div><div class="l">precio medio</div></div>
+    </div>
+    <ul style="margin-top:1.6rem">
+      <li>Mercado real de Ames, Iowa, <b>2006–2010</b>; precios de <b>$34.900 a $755.000</b></li>
+      <li>Media <b>$180.921</b> &gt; mediana <b>$163.000</b> → <span class="accent">asimetría positiva</span></li>
+      <li>Selección de variables <b>justificada una por una</b> (señal, redundancia, nulos)</li>
+    </ul>
+  </section>
+
+  <!-- 5 EDA -->
+  <section class="slide" data-time="1:15" data-notes="Cada gráfico deriva en una decisión: la asimetría y los outliers nos llevan a winsorizar; la no linealidad del precio frente a la calidad justifica incluir Random Forest. El EDA no es decorativo, dirige el preprocesamiento.">
+    <div class="kicker">Análisis exploratorio</div>
+    <h2>Del hallazgo <span class="dot">a la decisión</span></h2>
+    <table>
+      <thead><tr><th>Hallazgo</th><th>Evidencia</th><th>Decisión</th></tr></thead>
+      <tbody>
+        <tr><td>Asimetría de SalePrice</td><td>skew <b>1.88 → 0.12</b> con log1p</td><td>tratar outliers</td></tr>
+        <tr><td>Predictores fuertes</td><td>OverallQual, GrLivArea, garaje, sótano</td><td>confirma selección</td></tr>
+        <tr><td>Outliers</td><td><b>31</b> casas sobre IQR de GrLivArea</td><td>winsorizar 1%/99%</td></tr>
+        <tr><td>Sesgo geográfico / no linealidad</td><td>barrio caro <b>3.58×</b> el barato</td><td>justifica Random Forest</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:1rem">Gráficos en el notebook: histograma de precio, heatmap de correlación, boxplots de outliers, barras por vecindario.</p>
+  </section>
+
+  <!-- 6 PREPROCESAMIENTO -->
+  <section class="slide" data-time="1:15" data-notes="Esta es la decisión más importante: todo el preprocesamiento vive dentro de un Pipeline. Así la misma transformación se aplica en entrenamiento, validación e inferencia, y los parámetros se aprenden solo del train: cero fuga de información.">
+    <div class="kicker">Preprocesamiento</div>
+    <h2>Pipeline reproducible <span class="dot">y sin fuga de información</span></h2>
+    <div class="flow">
+      <div class="step"><div class="n">1</div>DomainImputer<br><span class="small">nulos estructurales + flags</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">2</div>RareCategoryGrouper<br><span class="small">categorías &lt;1% → Other</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">3</div>QuantileClipper<br><span class="small">winsoriza 1%/99%</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">4</div>ColumnTransformer<br><span class="small">imputar · escalar · One-Hot</span></div>
+    </div>
+    <ul style="margin-top:1.6rem">
+      <li><b>Nulos estructurales:</b> sin sótano ⇒ TotalBsmtSF = 0 (no es dato perdido)</li>
+      <li><b>StandardScaler solo en la Regresión Lineal</b> (los árboles son invariantes a escala)</li>
+      <li><b>Sin data leakage:</b> todo <span class="accent">fit</span> aprende solo del train; el pipeline entra completo a la validación cruzada</li>
+    </ul>
+  </section>
+
+  <!-- 7 MODELOS -->
+  <section class="slide" data-time="0:50" data-notes="Elegimos modelos deliberadamente complementarios: uno simple e interpretable, otro potente y no lineal. No es el que mejor dio, es un contraste metodológico. El tuning es reproducible desde producción con --tune.">
+    <div class="kicker">Modelos</div>
+    <h2>Dos modelos <span class="dot">complementarios</span></h2>
+    <div class="cols">
+      <div class="card">
+        <h3>Regresión Lineal</h3>
+        <ul>
+          <li>Base <b>interpretable</b>, baja varianza</li>
+          <li>Sensible a la escala → se escala</li>
+          <li>No capta no linealidades</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Random Forest</h3>
+        <ul>
+          <li>Ensemble de árboles con <b>bagging</b></li>
+          <li>Capta <b>no linealidades e interacciones</b></li>
+          <li>Invariante a la escala</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small" style="margin-top:1.4rem">Ajuste de hiperparámetros con <b>GridSearchCV (KFold=5)</b> · reproducible: <span class="accent">python -m src.train --tune</span></p>
+  </section>
+
+  <!-- 8 COMPARACION -->
+  <section class="slide" data-time="1:15" data-notes="Aquí está la honestidad del proyecto: no afirmamos que Random Forest gane de forma absoluta. En validación cruzada los modelos son estadísticamente equivalentes, p igual a 0.13. Reconozco también que el gap del Random Forest es su principal limitación.">
+    <div class="kicker">Comparación experimental</div>
+    <h2>Evaluación con <span class="dot">rigor estadístico</span></h2>
+    <div class="cols">
+      <div>
+        <table>
+          <thead><tr><th>Modelo</th><th>RMSE test</th><th>R²</th><th>RMSE CV (μ±σ)</th></tr></thead>
+          <tbody>
+            <tr class="best"><td>Random Forest</td><td>27.449</td><td>0.902</td><td>30.406 ± 5.080</td></tr>
+            <tr><td>Regresión Lineal</td><td>32.001</td><td>0.866</td><td>29.994 ± 4.396</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin-top:.9rem">Selección por <b>validación cruzada</b> (anti sesgo de selección), no por una sola partición.</p>
+      </div>
+      <div class="card">
+        <h3>¿La diferencia es real?</h3>
+        <ul>
+          <li>Prueba <b>t pareada</b> (CV repetida 5×5): <b class="accent">p ≈ 0.13</b></li>
+          <li>→ diferencia <b>NO significativa</b>: modelos equivalentes</li>
+          <li>Sobreajuste (gap train→test): RF <b>~60%</b> vs LR <b>~12%</b></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 RESULTADOS / DECISION -->
+  <section class="slide" data-time="1:15" data-notes="Desplegamos Random Forest por su mejor desempeño puntual en test y la robustez del ensemble. La variante log es una alternativa más estable, documentada y reproducible, pero no fue la operativa. La importancia confirma el EDA: calidad y tamaño mandan.">
+    <div class="kicker">Resultados · Decisión de modelo</div>
+    <h2>Modelo final: <span class="dot">Random Forest</span></h2>
+    <div class="stance">
+      <b>Random Forest fue seleccionado como modelo final</b> porque obtuvo el mejor desempeño predictivo en test.
+      La <b>Regresión Lineal + log1p</b> se reconoce como alternativa metodológicamente sólida, más estable y con menor sobreajuste,
+      pero <span class="pill alt">no seleccionada como modelo operativo</span> (desempeño en test inferior; diferencia no significativa, p ≈ 0.13).
+    </div>
+    <div class="cols" style="margin-top:1.4rem">
+      <div class="metrics4" style="grid-template-columns:repeat(2,1fr)">
+        <div class="card metric"><div class="v">27.449</div><div class="l">RMSE</div></div>
+        <div class="card metric"><div class="v">0.902</div><div class="l">R²</div></div>
+        <div class="card metric"><div class="v">17.198</div><div class="l">MAE</div></div>
+        <div class="card metric"><div class="v">10.7%</div><div class="l">MAPE</div></div>
+      </div>
+      <div class="card">
+        <h3>Importancia de variables (RF)</h3>
+        <div class="bars">
+          <div class="bar-row"><div class="top"><span>OverallQual</span><span class="v">56%</span></div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+          <div class="bar-row"><div class="top"><span>GrLivArea</span><span class="v">13%</span></div><div class="track"><div class="fill" style="width:24%"></div></div></div>
+          <div class="bar-row"><div class="top"><span>TotalBsmtSF</span><span class="v">6%</span></div><div class="track"><div class="fill dim" style="width:11%"></div></div></div>
+          <div class="bar-row"><div class="top"><span>GarageArea</span><span class="v">5%</span></div><div class="track"><div class="fill dim" style="width:9%"></div></div></div>
+        </div>
+        <p class="small" style="margin-top:.6rem">Coherente con el EDA: calidad y tamaño dominan.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 STREAMLIT -->
+  <section class="slide" data-time="1:00" data-notes="El sistema cumple el requisito de interacción directa. Aquí ingreso una vivienda y obtengo el precio con su rango, la comparación de modelos y las variables más influyentes. Si hay demo en vivo, hacerla en este momento.">
+    <div class="kicker">Sistema interactivo</div>
+    <h2>Aplicación <span class="dot">Streamlit</span></h2>
+    <div class="cols">
+      <div>
+        <ul>
+          <li>El usuario ajusta características → <b>predicción en tiempo real</b></li>
+          <li>Muestra <b>precio + rango probable (±MAE)</b>, comparación LR vs RF, importancia y métricas</li>
+          <li><b>Robustez:</b> validación y saneamiento de entradas; manejo de errores</li>
+          <li>Misma transformación que en entrenamiento (carga <span class="accent">models/*.joblib</span>)</li>
+        </ul>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:.6rem">
+        <div class="kicker" style="margin:0">Precio estimado</div>
+        <div style="font-size:2.6rem;font-weight:800;background:var(--title-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">$214.500</div>
+        <div class="small">Rango probable: <b style="color:#fff">$197.300 – $231.700</b></div>
+        <span class="pill win" style="width:max-content">Modelo líder: Random Forest</span>
+        <p class="small" style="margin-top:.4rem">💡 Ideal: demo en vivo de 20 s en este punto.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 LIMITACIONES -->
+  <section class="slide" data-time="0:50" data-notes="Soy transparente con los límites: el modelo es confiable en el rango medio y débil en propiedades de lujo. Y advierto el riesgo ético de tratar el vecindario como destino del precio. El sistema es apoyo a la decisión, no tasación oficial.">
+    <div class="kicker">Análisis crítico</div>
+    <h2>Limitaciones, sesgos <span class="dot">y ética</span></h2>
+    <div class="cols3">
+      <div class="card"><h3>Dataset</h3><p class="small">Una sola ciudad (Ames) y un periodo (2006–2010): no generaliza automáticamente a otras regiones ni a hoy.</p></div>
+      <div class="card"><h3>Modelo</h3><p class="small">Heterocedasticidad: subestima viviendas de lujo. Gap de sobreajuste del RF (~60%).</p></div>
+      <div class="card"><h3>Sesgos</h3><p class="small">Geográfico (Neighborhood) y temporal: reflejan el mercado de ese lugar y época.</p></div>
+    </div>
+    <div class="stance" style="margin-top:1.4rem">
+      <b>Ética:</b> usar el vecindario de forma determinista puede reforzar <b>desigualdades territoriales</b>.
+      El sistema es <span class="pill alt">apoyo a la decisión</span>, no una tasación oficial.
+    </div>
+  </section>
+
+  <!-- 12 CONCLUSIONES -->
+  <section class="slide" data-time="0:40" data-notes="En resumen: un sistema de regresión reproducible y honesto, con Random Forest como modelo operativo y una alternativa más estable documentada. Gracias, quedo atento a sus preguntas.">
+    <div class="kicker">Conclusiones</div>
+    <h2>Solución <span class="dot">completa, reproducible y honesta</span></h2>
+    <ul>
+      <li>Ciclo completo: formulación → EDA → <b>Pipeline</b> → 2 modelos → CV → tuning → evaluación → app → análisis crítico</li>
+      <li><b>Modelo final: Random Forest</b> (RMSE 27.449, R² 0.902); <b>LR+log</b> como alternativa más estable no operativa</li>
+      <li>Diferenciadores: <b>sin data leakage</b>, <b>selección por validación cruzada</b> y <b>significancia estadística</b> (p ≈ 0.13)</li>
+      <li>Mejoras futuras: más variables, <span class="accent">permutation_importance</span>, validar en otras regiones/periodos</li>
+    </ul>
+    <span class="final-badge" style="margin-top:1.6rem">Gracias · ¿Preguntas?</span>
+  </section>
+
+</div>
+
+<div id="notes"><h4>Notas del orador</h4><p id="noteText"></p></div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let i = 0;
+  document.getElementById('tot').textContent = total;
+  const progress = document.getElementById('progress');
+  const cur = document.getElementById('cur');
+  const timeBadge = document.getElementById('time');
+  const notes = document.getElementById('notes');
+  const noteText = document.getElementById('noteText');
+
+  function render(){
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    cur.textContent = i+1;
+    progress.style.width = ((i+1)/total*100)+'%';
+    timeBadge.textContent = slides[i].dataset.time || '';
+    noteText.textContent = slides[i].dataset.notes || '';
+  }
+  function next(){ if(i<total-1){i++;render();} }
+  function prev(){ if(i>0){i--;render();} }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){i=0;render();}
+    else if(e.key==='End'){i=total-1;render();}
+    else if(e.key.toLowerCase()==='s'||e.key.toLowerCase()==='n'){notes.classList.toggle('show');}
+    else if(e.key.toLowerCase()==='f'){ if(!document.fullscreenElement){document.documentElement.requestFullscreen();} else {document.exitFullscreen();} }
+  });
+  // click derecha/izquierda
+  document.getElementById('deck').addEventListener('click',e=>{
+    if(e.target.closest('a'))return;
+    (e.clientX > window.innerWidth/2) ? next() : prev();
+  });
+  render();
+</script>
+</body>
+</html>

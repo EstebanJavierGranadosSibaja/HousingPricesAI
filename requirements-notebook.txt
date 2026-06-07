@@ -1,11 +1,10 @@
 -r requirements.txt
 
-# Optional dependencies for exploratory notebooks/experiments
-matplotlib
-seaborn
-jupyter
-notebook
-plotly
-xgboost
-lightgbm
-catboost
+# Dependencias del notebook (solo lo que el notebook importa realmente).
+# Se eliminaron plotly/xgboost/lightgbm/catboost: el notebook no las usa.
+# Se agrego ipywidgets, requerido por el sistema interactivo (celda de widgets).
+matplotlib==3.10.8
+seaborn==0.13.2
+jupyter==1.1.1
+notebook==7.5.5
+ipywidgets==8.1.8

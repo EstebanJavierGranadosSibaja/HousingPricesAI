@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.config import CATEGORICAL_OPTION_LABELS_BY_FEATURE, FEATURE_METADATA
+from app.config import FEATURE_METADATA
 
 
 class FeatureCatalog:
@@ -21,12 +21,3 @@ class FeatureCatalog:
         if not help_value:
             return None
         return str(help_value)
-
-    @staticmethod
-    def format_option(feature: str, value: str) -> str:
-        mapping = CATEGORICAL_OPTION_LABELS_BY_FEATURE.get(feature, {})
-        if value in mapping:
-            return f"{mapping[value]} ({value})"
-        if value in {"Missing", "nan", "None"}:
-            return "Sin dato"
-        return value
