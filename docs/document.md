@@ -2,7 +2,7 @@
 
 **Universidad Nacional de Costa Rica — Sede Regional Brunca, Campus Pérez Zeledón**
 **Curso:** Inteligencia Artificial · **Proyecto Final**
-**Estudiante:** Esteban Granados Sibaja
+**Estudiantes:** Esteban Granados Sibaja · Juan Carlos Camacho Solano · Allan Vargas Torrer · Francisco Mora Cabezas
 **Tipo de problema:** Regresión (aprendizaje supervisado)
 **Dataset:** Ames Housing (Kaggle — *House Prices: Advanced Regression Techniques*)
 
@@ -69,7 +69,7 @@ Hallazgos principales del EDA (detalle y gráficos en el notebook):
 
 | Hallazgo | Evidencia | Decisión derivada |
 |---|---|---|
-| `SalePrice` con fuerte asimetría positiva | skew = **1.88** (original) → **0.12** con `log1p`; media 180.921 > mediana 163.000 | Tratar outliers; considerar transformación log como mejora futura |
+| `SalePrice` con fuerte asimetría positiva | skew = **1.88** (original) → **0.12** con `log1p`; media 180.921 > mediana 163.000 | Tratar outliers; aplicar `log1p` al objetivo (implementado en producción vía `TransformedTargetRegressor`, ver §5.1.2) |
 | Predictores más fuertes | Mayor correlación: `OverallQual`, `GrLivArea`, `GarageCars/Area`, `TotalBsmtSF` | Confirma la selección de variables |
 | Multicolinealidad | `GarageCars`–`GarageArea`, `TotRmsAbvGrd`–`GrLivArea` | Escalado para la Regresión Lineal; descartar redundantes |
 | Outliers | **31** viviendas sobre el límite IQR de `GrLivArea`; casas grandes con precio bajo | Winsorización (clip 1%/99%) en lugar de eliminar filas |
@@ -143,13 +143,18 @@ modelo ajustado. Las métricas de esta sección corresponden al modelo base serv
 
 ### 5.1 Métricas en el conjunto de prueba (modelo base servido)
 
-> Generadas por `src/train.py` y almacenadas en `reports/metrics_comparison.csv`
-> (fuente única de verdad, consumida también por la app).
+> **Random Forest** — métricas de `reports/metrics_comparison.csv` (fuente de producción,
+> consumida también por la app). **Regresión Lineal** — configuración **base (sin `log1p`)**,
+> usada como línea base de comparación. *Nota metodológica:* la LR de producción usa el
+> preprocesador completo con `log1p` (configs D/E del estudio de ablación, RMSE ≈ 28.581,
+> R² ≈ 0.894); el experimento con preprocesador simplificado + `log1p` (config B,
+> RMSE ≈ 27.339) se documenta en §5.1.2. La diferencia entre configs B y D/E refleja que
+> el `OrdinalEncoder` y `AgeFeatureCreator` no mejoran la Regresión Lineal en este dataset.
 
 | Modelo | MAE | RMSE test | R² test |
 |---|---|---|---|
-| Random Forest | 17.198 | **27.449** | **0.9018** |
-| Regresión Lineal | 18.171 | 32.001 | 0.8665 |
+| Random Forest | 17.212 | **27.308** | **0.9028** |
+| Regresión Lineal *(base, sin log1p)* | 18.171 | 32.001 | 0.8665 |
 
 En la **partición de prueba** el Random Forest obtiene menor RMSE. El MAPE es
 **10.7%** (RF) y **10.2%** (Lineal). **Sin embargo, esta tabla por sí sola no
@@ -164,7 +169,7 @@ cruzada KFold=5 sobre el train**, reportando la incertidumbre:
 | Modelo | CV RMSE (media ± std) | Test RMSE |
 |---|---|---|
 | Regresión Lineal | **29.994 ± 4.396** | 32.001 |
-| Random Forest | 30.406 ± 5.080 | 27.449 |
+| Random Forest | 30.007 ± 5.023 | 27.308 |
 
 **Hallazgo clave:** por validación cruzada la Regresión Lineal y el Random Forest son
 **prácticamente equivalentes** (sus intervalos media ± std se solapan ampliamente). En
@@ -182,19 +187,25 @@ El precio tiene fuerte asimetría positiva (skew 1.88) y residuos heterocedásti
 modelar `log1p(SalePrice)` y revertir con `expm1`. Implementado vía
 `TransformedTargetRegressor` y disponible con `python -m src.train --log-target`:
 
+> *Nota:* "LR + log" corresponde al **experimento de ablación config B** (preprocesador básico +
+> `log1p` en objetivo, RMSE 27.339). El modelo LR de **producción** usa el preprocesador completo
+> (configs D/E: + `OrdinalEncoder` + `AgeFeatureCreator`) y obtiene RMSE 28.581 — el efecto
+> de esas etapas no mejora la LR en este dataset (ver §5.1). "RF (raw)" corresponde al modelo
+> de producción (config G del estudio de ablación), verificado en `reports/metrics_comparison.csv`.
+
 | Modelo | Test RMSE | R² test | Gap train→test |
 |---|---|---|---|
-| Regresión Lineal **+ log** | **27.339** | **0.9026** | **1.8%** |
+| Regresión Lineal **+ log** (config B) | **27.339** | **0.9026** | **1.8%** |
 | Random Forest + log | 27.674 | 0.9002 | 59.7% |
-| Regresión Lineal (raw) | 32.001 | 0.8665 | 12.1% |
-| Random Forest (raw) | 27.449 | 0.9018 | 59.9% |
+| Regresión Lineal (raw, config A) | 32.001 | 0.8665 | 12.1% |
+| Random Forest (raw, config G — producción) | **27.308** | **0.9028** | 59.7% |
 
 **Evidencia (CV repetida 5×5):** la transformación log mejora a la Regresión Lineal de
 forma **estadísticamente significativa frente a sí misma sin transformar** (`LR+log` vs
 `LR raw`: mejora media ≈ 2.061, **p ≈ 0.002**) y **reduce su sobreajuste de 12.1% a
 1.8%**. El Random Forest **no** mejora con log (p ≈ 0.94: es invariante a la escala). Sin
-embargo, las diferencias de RMSE de **test** entre las mejores configuraciones (`RF` ≈
-27.449 y `LR+log` ≈ 27.339) son del orden de **0.4%, dentro del ruido de muestreo y no
+embargo, las diferencias de RMSE de **test** entre las mejores configuraciones (`RF` config G ≈
+27.308 y `LR+log` config B ≈ 27.339) son del orden de **0.1%, dentro del ruido de muestreo y no
 estadísticamente significativas** (la comparación principal RF vs Lineal da p ≈ 0.13);
 por tanto **no constituyen una base para preferir `LR+log` como modelo operativo**.
 
@@ -220,7 +231,7 @@ operativo**. Es reproducible con `python -m src.train --log-target`.
 | Modelo | RMSE train | RMSE test | Gap |
 |---|---|---|---|
 | Regresión Lineal | 28.137 | 32.001 | 3.864 (12.1%) |
-| Random Forest | 11.012 | 27.449 | 16.437 (59.9%) |
+| Random Forest | 11.012 | 27.308 | 16.296 (59.7%) |
 
 El Random Forest presenta un gap del ~60% (memoriza parte del ruido del
 entrenamiento), frente al ~12% del modelo lineal. Este gap es la **principal limitación
@@ -268,7 +279,7 @@ del modelo lineal a 1.8%** (5.1.2): por eso `Regresión Lineal + log` se documen
   análisis crítico.
 - **Modelo final del sistema: Random Forest.** Fue seleccionado como modelo final
   porque obtuvo el **mejor desempeño predictivo en el conjunto de prueba**
-  (RMSE ≈ 27.449, R² ≈ 0.902). La **Regresión Lineal con transformación logarítmica
+  (RMSE ≈ 27.308, R² ≈ 0.903). La **Regresión Lineal con transformación logarítmica
   (`log1p`)** se reconoce como una **alternativa metodológicamente sólida, más estable y
   con menor riesgo de sobreajuste** (gap 1.8% frente a ~60% del RF), pero **no fue
   seleccionada como modelo operativo** debido a que presentó un desempeño predictivo

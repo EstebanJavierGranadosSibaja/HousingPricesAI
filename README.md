@@ -1,5 +1,8 @@
 # ProyectoAI - Prediccion de Precio de Viviendas
 
+**Autores:** Esteban Granados Sibaja · Juan Carlos Camacho Solano · Allan Vargas Torrer · Francisco Mora Cabezas  
+**Universidad Nacional de Costa Rica — Sede Regional Brunca, Campus Pérez Zeledón · Curso: Inteligencia Artificial · Proyecto Final**
+
 Proyecto final de IA (regresion) para predecir precios de viviendas con dos modelos comparables:
 
 - Regresion Lineal
@@ -58,7 +61,7 @@ HousingPricesAI/
 │   ├── document.md          # documento tecnico (convierte a PDF para entregar)
 │   └── dataset/             # descripcion de variables (EN + ES)
 ├── tests/
-│   ├── test_pipeline.py     # 8 tests: pipeline, transformadores, metricas
+│   ├── test_pipeline.py     # 10 tests: pipeline, transformadores, metricas
 │   └── test_explainability.py # 29 tests: SHAP, LLM providers, service
 ├── scripts/
 │   ├── feature_diagnostics.py
@@ -162,7 +165,7 @@ Notas:
 
 ## Pruebas
 
-Suite completa: 37 tests en total (8 de pipeline ML + 29 de capa de explicabilidad).
+Suite completa: 39 tests en total (10 de pipeline ML + 29 de capa de explicabilidad), todos pasan.
 
 ```bash
 python -m pytest tests/ -v
