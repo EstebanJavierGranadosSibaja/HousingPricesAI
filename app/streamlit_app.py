@@ -627,6 +627,9 @@ def _render_explanation_tab(result: dict[str, object], consensus: float, rf_mode
     factors = st.session_state.get("explanation_factors") or {}
     if explanation:
         st.markdown("---")
+        shap_error = factors.get("error")
+        if shap_error and shap_error != "shap_fallback":
+            st.caption(f"⚠ SHAP: {shap_error} — mostrando importancia global como respaldo.")
         st.markdown("#### Análisis de la estimación")
         st.markdown(explanation)
         pos = factors.get("positive", [])

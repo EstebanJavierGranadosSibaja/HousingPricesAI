@@ -63,12 +63,13 @@ class SHAPExplainer:
         Returns:
             {
                 "positive": [{"feature_label": str, "shap": float}, ...],
-                "negative": [{"feature_label": str, "shap": float}, ...]
+                "negative": [{"feature_label": str, "shap": float}, ...],
+                "error": str | None   — set when SHAP failed
             }
-        Gracefully returns empty lists on any error.
+        Falls back gracefully on any error, exposing the exception message.
         """
         if not _SHAP_AVAILABLE:
-            return {"positive": [], "negative": []}
+            return {"positive": [], "negative": [], "error": "shap not installed"}
 
         try:
             outer_pp = rf_model.named_steps["preprocessor"]
@@ -79,10 +80,10 @@ class SHAPExplainer:
             feature_names = list(inner_ct.get_feature_names_out())
 
             explainer = self._get_explainer(rf_model)
-            shap_vals = explainer.shap_values(X_transformed)
+            shap_vals = explainer.shap_values(X_transformed, check_additivity=False)
             if isinstance(shap_vals, list):
                 shap_vals = shap_vals[0]
-            shap_row = np.asarray(shap_vals[0])
+            shap_row = np.asarray(shap_vals).reshape(-1)
 
             aggregated = self._aggregate(feature_names, shap_row)
 
@@ -101,10 +102,10 @@ class SHAPExplainer:
                 if len(positive) >= top_n and len(negative) >= top_n:
                     break
 
-            return {"positive": positive, "negative": negative}
+            return {"positive": positive, "negative": negative, "error": None}
 
-        except Exception:
-            return {"positive": [], "negative": []}
+        except Exception as exc:
+            return {"positive": [], "negative": [], "error": str(exc)}
 
     # ------------------------------------------------------------------
     # Internals

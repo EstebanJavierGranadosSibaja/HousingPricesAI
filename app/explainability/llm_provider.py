@@ -99,27 +99,47 @@ class OllamaProvider(BaseLLMProvider):
 class MockProvider(BaseLLMProvider):
     """Template-based fallback when Ollama is unavailable.
 
-    Produces a structured explanation from the embedded factor list so the
-    prediction workflow is never blocked by LLM availability.
+    Parses the factor blocks already embedded in the prompt so the explanation
+    mentions the actual drivers instead of generic text.
     """
 
     def generate(self, prompt: str) -> str:
-        # Extract price from the prompt so the fallback is specific
         price_match = re.search(r"\$([0-9,]+)", prompt)
         price_str = price_match.group(0) if price_match else "el valor estimado"
 
-        return (
-            f"_(Explicación generada automáticamente — Ollama no disponible)_\n\n"
-            f"La vivienda tiene un precio estimado de **{price_str}**. "
-            "Este valor refleja las características ingresadas comparadas con el "
-            "historial de ventas del mercado inmobiliario local. "
-            "Los factores con mayor impacto positivo son aquellos relacionados con "
-            "la calidad de los materiales, el área habitable y la presencia de garage. "
-            "Los factores que moderan el precio incluyen la antigüedad de la vivienda "
-            "y el estado de conservación. "
-            "Para obtener una explicación más detallada, instala y ejecuta Ollama "
-            "con el modelo `qwen3:8b`."
+        pos_factors = self._parse_block(prompt, "AUMENTAN")
+        neg_factors = self._parse_block(prompt, "REDUCEN")
+
+        if pos_factors:
+            pos_text = ", ".join(f"**{f}**" for f in pos_factors[:3])
+            pos_sentence = f"Los factores que más elevan su valor son {pos_text}."
+        else:
+            pos_sentence = "Su valor refleja la calidad general y el tamaño de la propiedad."
+
+        if neg_factors:
+            neg_text = " y ".join(f"**{f}**" for f in neg_factors[:2])
+            neg_sentence = f"Los aspectos que moderan el precio a la baja incluyen {neg_text}."
+        else:
+            neg_sentence = ""
+
+        footer = (
+            "\n\n_Explicación automática — activa Ollama (`ollama serve`) "
+            "para obtener un análisis con lenguaje natural más detallado._"
         )
+
+        return f"Esta vivienda tiene un precio estimado de **{price_str}**. {pos_sentence} {neg_sentence}{footer}".strip()
+
+    @staticmethod
+    def _parse_block(prompt: str, keyword: str) -> list[str]:
+        match = re.search(
+            rf"Factores que {keyword}.*?:(.*?)(?:Factores que|Instrucciones:|$)",
+            prompt,
+            re.DOTALL,
+        )
+        if not match:
+            return []
+        lines = match.group(1).strip().splitlines()
+        return [line.lstrip("- ").strip() for line in lines if line.strip().startswith("-")]
 
 
 def build_provider(

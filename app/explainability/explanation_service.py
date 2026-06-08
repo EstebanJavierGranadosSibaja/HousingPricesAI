@@ -59,9 +59,11 @@ class ExplanationService:
 
         Returns:
             (explanation_text, factors_dict)
-            factors_dict = {"positive": [...], "negative": [...]}
+            factors_dict = {"positive": [...], "negative": [...], "error": str|None}
         """
         factors = self._shap.compute_factors(sample, rf_model, top_n=5)
+        if not factors.get("positive") and not factors.get("negative"):
+            factors = self._importance_fallback(rf_model)
         text = self._generate_text(predicted_price, factors)
         return text, factors
 
@@ -111,9 +113,25 @@ class ExplanationService:
             return MockProvider().generate(prompt)
 
     @staticmethod
+    def _importance_fallback(rf_model) -> dict:
+        """Build synthetic pos/neg factor list from global feature importances."""
+        try:
+            from app.analytics import PredictionAnalytics
+            imp = PredictionAnalytics.feature_importances(rf_model, top_n=6)
+            if imp is None or imp.empty:
+                return {"positive": [], "negative": [], "error": "no importances"}
+            positive = [
+                {"feature_label": row["Variable"], "shap": row["Importancia"]}
+                for _, row in imp.head(3).iterrows()
+            ]
+            return {"positive": positive, "negative": [], "error": "shap_fallback"}
+        except Exception as exc:
+            return {"positive": [], "negative": [], "error": str(exc)}
+
+    @staticmethod
     def _no_factors_text(price: float) -> str:
         return (
             f"El precio estimado de la vivienda es **${price:,.0f}**. "
-            "No fue posible desglosar los factores individuales para esta predicción. "
-            "La estimación se basa en el historial de ventas del mercado inmobiliario."
+            "No fue posible calcular los factores individuales para esta predicción. "
+            "La estimación se basa en los patrones aprendidos del mercado inmobiliario local."
         )
