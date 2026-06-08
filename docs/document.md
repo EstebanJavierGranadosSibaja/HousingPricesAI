@@ -2,7 +2,13 @@
 
 **Universidad Nacional de Costa Rica — Sede Regional Brunca, Campus Pérez Zeledón**
 **Curso:** Inteligencia Artificial · **Proyecto Final**
-**Estudiantes:** Esteban Granados Sibaja · Juan Carlos Camacho Solano · Allan Vargas Torrer · Francisco Mora Cabezas
+
+**Estudiantes:** 
+- Esteban Granados Sibaja 
+- uan Carlos Camacho Solano
+- Allan Vargas Torrer
+- Francisco Mora Cabezas
+  
 **Tipo de problema:** Regresión (aprendizaje supervisado)
 **Dataset:** Ames Housing (Kaggle — *House Prices: Advanced Regression Techniques*)
 
