@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python _fix_notebook.py)",
+      "Read(//c/Users/esteb/.claude/projects/c--Users-esteb-OneDrive-Escritorio-UNA-2026-CICLO-I-CURSOS-AI-ENTORNOV-CURSO-AI-HousingPricesAI/memory/**)",
+      "Bash(python -m pytest tests/ --collect-only -q)",
+      "Bash(python -m pytest tests/test_pipeline.py --collect-only -q)",
+      "Bash(python -m pytest tests/test_explainability.py --collect-only -q)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\esteb\\.claude\\projects\\c--Users-esteb-OneDrive-Escritorio-UNA-2026-CICLO-I-CURSOS-AI-ENTORNOV-CURSO-AI-HousingPricesAI\\memory"
+    ]
+  }
+}
