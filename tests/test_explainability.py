@@ -158,9 +158,10 @@ class TestSHAPExplainer:
     def test_returns_expected_structure_on_failure(self):
         explainer = SHAPExplainer()
         result = explainer.compute_factors(pd.DataFrame(), _FailingModel(), top_n=5)
-        assert set(result.keys()) == {"positive", "negative"}
+        assert set(result.keys()) == {"positive", "negative", "error"}
         assert isinstance(result["positive"], list)
         assert isinstance(result["negative"], list)
+        assert result["error"] is not None
 
     def test_aggregate_correctly_sums_by_prefix(self):
         names = ["skewed__GrLivArea", "num__HouseAge", "cat__MSZoning_RL", "cat__MSZoning_RM"]

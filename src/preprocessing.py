@@ -360,7 +360,7 @@ def build_preprocessor(
     # Skewed numerics: clip -> log1p -> optional StandardScaler
     skewed_steps: list[tuple] = [
         ("imputer", SimpleImputer(strategy="median")),
-        ("log", FunctionTransformer(np.log1p)),
+        ("log", FunctionTransformer(np.log1p, feature_names_out="one-to-one")),
     ]
     if scale_numeric:
         skewed_steps.append(("scaler", StandardScaler()))
